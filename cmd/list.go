@@ -29,9 +29,14 @@ var listCmd = &cobra.Command{
 	Short: "displays all stored accounts",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		isInit, err := internal.CheckVaultInit(vaultPath)
+		if err != nil || !isInit {
+			fmt.Println(err.Error())
+			return
+		}
 		password, err := internal.InputPassword()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 

@@ -32,21 +32,28 @@ var addCmd = &cobra.Command{
 	Short: "add a new username and password to the key vault",
 	Long:  `with the add command you can add a new password mapped to a username or account name`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		isInit, err := internal.CheckVaultInit(vaultPath)
+		if err != nil || !isInit {
+			fmt.Println(err.Error())
+			return
+		}
+
 		password, err := internal.InputPassword()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 
 		uname, pass, err := internal.InputCredentials()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return
 		}
 
 		vault, err := internal.DecryptVault(vaultPath, password)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return
 		}
 

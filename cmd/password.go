@@ -16,36 +16,72 @@ limitations under the License.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
 )
 
 // passwordCmd represents the password command
 var passwordCmd = &cobra.Command{
 	Use:   "password",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "set the password to encrypt and decrypt your vault",
+	Long:  `Choose a strong password! And dont forget it - If you choose to go that way..I can't follow you nor can I help you`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("password called")
+		isInit, _ := internal.CheckVaultInit(vaultPath)
+
+		var vault map[string]string
+		var password1 string
+		var password2 string
+
+		if isInit {
+			password, err := internal.InputNewPassword("Current Password: ")
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			vault, err = internal.DecryptVault(vaultPath, password)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+		}
+
+		if !isInit {
+			vault = make(map[string]string)
+		}
+
+		password1, err := internal.InputNewPassword("Password: ")
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println("🙃 Just to make sure...confirm your password")
+		password2, err = internal.InputNewPassword("Password: ")
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		if password1 != password2 {
+			fmt.Println("They don't match let's do it again, shall we? 🤦🏼‍♀️")
+			return
+		}
+
+		vaultslcie, err := json.Marshal(vault)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		if err := internal.EncryptVault(vaultPath, password1, vaultslcie); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println("Vault is now encrypted with the new password ✅")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(passwordCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// passwordCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// passwordCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

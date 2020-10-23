@@ -11,8 +11,22 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/KonstantinGasser/sherlocked/cmd_errors"
 	"golang.org/x/crypto/ssh/terminal"
 )
+
+func CheckVaultInit(path string) (bool, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	if fi.Size() == 0 {
+		return false, cmd_errors.InitNotDoneError{
+			MSG: "🏁 two steps bofore you can start:\n1️⃣ run 'lock password' (this will set the password to encrypt/decrypt your vault)\n2️⃣ run 'lock add' to add your first password\nthat's it - you're ready to go 🎉🥳",
+		}
+	}
+	return true, nil
+}
 
 // DecryptVault takes a path to a vault and the key it has bin encrypted with.
 // It opens and reads the contend returns the AES decrypted content in form
@@ -23,11 +37,7 @@ func DecryptVault(path, vaultkey string) (map[string]string, error) {
 		return nil, err
 	}
 
-	hash, err := hashkey(vaultkey)
-	if err != nil {
-		return nil, err
-	}
-
+	hash := hashkey(vaultkey)
 	decrypted, err := decrypt(hash, file)
 	if err != nil {
 		return nil, err
@@ -42,10 +52,7 @@ func DecryptVault(path, vaultkey string) (map[string]string, error) {
 // and deletes the old file
 func EncryptVault(path, vaultkey string, vault []byte) error {
 
-	hash, err := hashkey(vaultkey)
-	if err != nil {
-		return err
-	}
+	hash := hashkey(vaultkey)
 	encrypted, err := encrypt(hash, vault)
 	if err != nil {
 		return err
@@ -74,7 +81,9 @@ func InputPassword() (string, error) {
 	fmt.Print("🔒: ")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		return "", err
+		return "", cmd_errors.OSStdInError{
+			MSG: `🤨 Sorry ~ somehow we failed to read your password from os.Stdin..`,
+		}
 	}
 	password := string(bytePassword)
 	fmt.Print("\n")
@@ -91,18 +100,36 @@ func InputCredentials() (string, string, error) {
 	fmt.Print("🔏: ")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		return "", "", err
+		return "", "", cmd_errors.OSStdInError{
+			MSG: `🤨 Sorry ~ somehow we failed to read your password from os.Stdin..`,
+		}
 	}
+	fmt.Print("\n")
+
 	password := string(bytePassword)
 
 	return strings.TrimSpace(username), strings.TrimSpace(password), nil
 }
 
-func hashkey(key string) ([]byte, error) {
-	hash := sha256.Sum256([]byte(key))
+// InputNewPassword is used to collect the new password set by a user
+func InputNewPassword(txt string) (string, error) {
 
+	fmt.Print(txt)
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", cmd_errors.OSStdInError{
+			MSG: `🤨 Sorry ~ somehow we failed to read your password from os.Stdin..`,
+		}
+	}
+	password := string(bytePassword)
+	fmt.Print("\n")
+	return strings.TrimSpace(password), nil
+}
+
+func hashkey(key string) []byte {
+	hash := sha256.Sum256([]byte(key))
 	hexHash := hex.EncodeToString(hash[:])
-	return []byte(hexHash), nil
+	return []byte(hexHash)
 }
 
 // sliceToMap unmarshales a byte slice to a map[string]string
@@ -111,11 +138,18 @@ func sliceToMap(data []byte) (map[string]string, error) {
 	var v map[string]string
 	if len(data) <= 0 {
 		v = make(map[string]string)
-		return v, nil
+		return v, cmd_errors.ZeroVaultError{
+			MSG: `🤷🏼‍♀️: Ups looks like you have not stored any password in the vault yet.
+Use 'lock password' to set a vault password and then use
+'lock add' to add a new password to the vault`,
+		}
 	}
 
 	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, err
+		return nil, cmd_errors.MapConversionError{
+			MSG: `🙅🏼‍♀️ hey! have you just misstyped the password
+      or are you a bad bad boy? 🤨`,
+		}
 	}
 	return v, nil
 }

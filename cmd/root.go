@@ -25,6 +25,7 @@ import (
 
 var homeDir string
 var vaultPath string
+var vaultExists = false
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -52,5 +53,5 @@ func Execute() {
 
 func init() {
 	homeDir, _ = os.UserHomeDir()
-	vaultPath = strings.Join([]string{homeDir, ".sherlocked1"}, "/")
+	vaultPath = strings.Join([]string{homeDir, ".sherlocked"}, "/")
 }
