@@ -19,5 +19,4 @@ import "github.com/KonstantinGasser/sherlocked/cmd"
 
 func main() {
 	cmd.Execute()
-	// clipboard.WriteAll("hello world")
 }

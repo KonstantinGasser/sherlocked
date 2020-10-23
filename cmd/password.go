@@ -16,8 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
@@ -57,6 +60,17 @@ var passwordCmd = &cobra.Command{
 			fmt.Println(err.Error())
 			return
 		}
+		passwordStrength := internal.EvaluatePassword(password1)
+		if passwordStrength < 50 {
+			fmt.Println("Mhm looks like this is not the best password..😅 - try again [Y/n]")
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("? ")
+			tryAgain, _ := reader.ReadString('\n')
+			if strings.TrimSpace(tryAgain) == "Y" {
+				password1, err = internal.InputNewPassword("😏 choose wisely: ")
+			}
+		}
+
 		fmt.Println("🙃 Just to make sure...confirm your password")
 		password2, err = internal.InputNewPassword("Password: ")
 		if err != nil {

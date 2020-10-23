@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -152,4 +153,30 @@ Use 'lock password' to set a vault password and then use
 		}
 	}
 	return v, nil
+}
+
+// EvalPassword evaluates the strength of a password (range between 0-100)
+func EvaluatePassword(password string) int {
+	var strength = 0
+
+	regN := regexp.MustCompile(`[0-9]`)
+	numbers := regN.FindAllString(password, -1)
+	strength += len(numbers) * 4
+
+	regC := regexp.MustCompile(`[A-Z]`)
+	caper := regC.FindAllString(password, -1)
+	strength += (len(password) - len(caper)) * 2
+
+	regL := regexp.MustCompile(`[a-z]`)
+	lower := regL.FindAllString(password, -1)
+	strength += (len(password) - len(lower)) * 2
+
+	regS := regexp.MustCompile(`[$#_-]`)
+	specials := regS.FindAllString(password, -1)
+	strength += len(specials) * 6
+
+	if strength > 100 {
+		return 100
+	}
+	return strength
 }
