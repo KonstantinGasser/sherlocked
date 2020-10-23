@@ -9,7 +9,7 @@ import (
 
 func decrypt(aeskey []byte, ciphervault []byte) ([]byte, error) {
 
-	block, err := aes.NewCipher(aeskey[:32])
+	block, err := aes.NewCipher(aeskey[:16])
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +31,7 @@ func decrypt(aeskey []byte, ciphervault []byte) ([]byte, error) {
 
 func encrypt(aeskey []byte, vault []byte) ([]byte, error) {
 
-	block, err := aes.NewCipher(aeskey[:32])
+	block, err := aes.NewCipher(aeskey[:16])
 	if err != nil {
 		return nil, err
 	}
