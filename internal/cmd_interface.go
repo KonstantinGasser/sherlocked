@@ -112,8 +112,8 @@ func InputCredentials() (string, string, error) {
 	return strings.TrimSpace(username), strings.TrimSpace(password), nil
 }
 
-// InputNewPassword is used to collect the new password set by a user
-func InputNewPassword(txt string) (string, error) {
+// InputText is used to collect the new password set by a user
+func InputText(txt string) (string, error) {
 
 	fmt.Print(txt)
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))

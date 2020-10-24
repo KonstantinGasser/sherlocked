@@ -39,7 +39,7 @@ var passwordCmd = &cobra.Command{
 		var password2 string
 
 		if isInit {
-			password, err := internal.InputNewPassword("Current Password: ")
+			password, err := internal.InputText("Current Password: ")
 			if err != nil {
 				fmt.Println(err.Error())
 				return
@@ -55,24 +55,24 @@ var passwordCmd = &cobra.Command{
 			vault = make(map[string]string)
 		}
 
-		password1, err := internal.InputNewPassword("Password: ")
+		password1, err := internal.InputText("Password: ")
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 		passwordStrength := internal.EvaluatePassword(password1)
 		if passwordStrength < 50 {
-			fmt.Println("Mhm looks like this is not the best password..😅 - try again [Y/n]")
+			fmt.Print("Mhm looks like this is not the best password..😅 - try again [Y/n]: ")
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Print("? ")
 			tryAgain, _ := reader.ReadString('\n')
 			if strings.TrimSpace(tryAgain) == "Y" {
-				password1, err = internal.InputNewPassword("😏 choose wisely: ")
+				password1, err = internal.InputText("😏 choose wisely: ")
 			}
+			fmt.Print("\n")
 		}
 
 		fmt.Println("🙃 Just to make sure...confirm your password")
-		password2, err = internal.InputNewPassword("Password: ")
+		password2, err = internal.InputText("Password: ")
 		if err != nil {
 			fmt.Println(err.Error())
 			return

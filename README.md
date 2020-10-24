@@ -23,7 +23,7 @@ After the setup you can use
 
 
 ## things to know
-When you add a new password the old vault will be overwritten, however to avoid password loss there will be a backup created of the `.sherlocked` file with the suffix of a unix timestamp. In case I messed up something and the bug is about to ruin your Sunday you can run `mv .sherlocked-unixtimestamp .sherlocked`.
+When you add a new password the old vault will be overwritten, however to avoid password loss there will be a backup created of the `.sherlocked` file with the suffix of a unix timestamp. In case I messed up something and the bug is about to ruin your Sunday you can run `mv .sherlocked-unixtimestamp .sherlocked` to get the old vault back.
 
 ## lastly
 in case of password loss I can not take responsibility for it but would be happy if you tell what happened so I can fix it in post :D

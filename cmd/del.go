@@ -16,8 +16,13 @@ limitations under the License.
 package cmd
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -26,15 +31,54 @@ var username string
 // delCmd represents the del command
 var delCmd = &cobra.Command{
 	Use:   "del",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "delete a key value pair from the vault",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Not implemented yet 🥴")
+		isInit, err := internal.CheckVaultInit(vaultPath)
+		if err != nil || !isInit {
+			fmt.Println(err.Error())
+			return
+		}
+
+		password, err := internal.InputPassword()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		vault, err := internal.DecryptVault(vaultPath, password)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		if _, ok := vault[username]; !ok {
+			fmt.Printf("Sorry mate I could not find a match for '%s', run lock list to see if you misstyped\n", username)
+			return
+		}
+		fmt.Printf("Are you sure you want to delete the user acoont '%s'? [Y/n]: ", username)
+		reader := bufio.NewReader(os.Stdin)
+		yes, _ := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		if strings.TrimSpace(yes) == "Y" {
+			delete(vault, username)
+			vaultslcie, err := json.Marshal(vault)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			if err := internal.EncryptVault(vaultPath, password, vaultslcie); err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println("🗑 user account deleted!")
+			return
+		}
+
+		fmt.Println("user account NOT deleted!")
 	},
 }
 
