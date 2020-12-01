@@ -54,7 +54,7 @@ var getCmd = &cobra.Command{
 			return
 		}
 		clipboard.WriteAll(vault[name])
-		if !hidePassword {
+		if hidePassword {
 			fmt.Print(vault[name])
 		}
 
@@ -66,5 +66,5 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 
 	getCmd.Flags().StringVarP(&name, "user", "u", "", "Specifies the account under which the password is stored")
-	getCmd.Flags().BoolVar(&hidePassword, "hide", false, "only write password to clipboard")
+	getCmd.Flags().BoolVarP(&hidePassword, "verbose", "v", false, "print password to the command line")
 }

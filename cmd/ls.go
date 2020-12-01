@@ -25,7 +25,7 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "ls",
 	Short: "displays all stored accounts",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
