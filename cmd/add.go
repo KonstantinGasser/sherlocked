@@ -57,8 +57,8 @@ var addCmd = &cobra.Command{
 			return
 		}
 
-		if key, ok := vault[uname]; ok && !override {
-			fmt.Printf("🤔 User %s already stroed use add --override (this option is inreversable) or del -user\n", key)
+		if _, ok := vault[uname]; ok && !override {
+			fmt.Printf("🤔 User %s already stroed use add --override (this option is inreversable) or del -user\n", uname)
 			return
 		}
 		vault[uname] = pass
