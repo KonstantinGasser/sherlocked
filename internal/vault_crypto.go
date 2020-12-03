@@ -20,6 +20,7 @@ type Vault struct {
 	Path string
 }
 
+// Decrypt takes a key and a byte slice and decrypts the AES encrypted byte slice
 func (v *Vault) Decrypt(key string, file []byte) (map[string]string, error) {
 
 	aeskey, _ := v.hash(key)
@@ -44,6 +45,7 @@ func (v *Vault) Decrypt(key string, file []byte) (map[string]string, error) {
 	return v.deserialize(ciphervault)
 }
 
+// Encrypt takes a key and a byte slice and performs a AES encryption on the slcie
 func (v *Vault) Encrypt(key string, vault []byte) ([]byte, error) {
 
 	aeskey, _ := v.hash(key)
@@ -82,7 +84,6 @@ func (v Vault) Write(data []byte) error {
 				by in the make command. If it is missing execute 'touch $HOME/.sherlocked'.`,
 		}
 	}
-
 
 	if _, err := f.Write(data); err != nil {
 		return cmd_errors.IOFileError{
@@ -144,12 +145,13 @@ func (v Vault) EvaluatePassword(password string) int {
 	return strength
 }
 
+// IsInit controls if there is already a vault file created
 func (v Vault) IsInit() (bool, error) {
 	fi, err := os.Stat(v.Path)
 	if err != nil {
 		return false, err
 	}
-	
+
 	if fi.Size() == 0 {
 		return false, cmd_errors.InitNotDoneError{
 			MSG: "🏁 two steps bofore you can start:\n1️⃣ run 'lock password' (this will set the password to encrypt/decrypt your vault)\n2️⃣ run 'lock add' to add your first password\nthat's it - you're ready to go 🎉🥳",
@@ -158,9 +160,11 @@ func (v Vault) IsInit() (bool, error) {
 	return true, nil
 }
 
+// GetPath returns the path of the vault file
 func (v Vault) GetPath() string {
 	return v.Path
 }
+
 // hash hashes the vault key
 func (v Vault) hash(key string) ([]byte, error) {
 	b := sha256.Sum256([]byte(key))
@@ -168,6 +172,8 @@ func (v Vault) hash(key string) ([]byte, error) {
 	return []byte(hexB), nil
 }
 
+// Serialize marshals the vault to a byte slice in order for it be written to a
+// file
 func (v Vault) Serialize(data map[string]string) ([]byte, error) {
 	b, err := json.Marshal(data)
 	if err != nil {

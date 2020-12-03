@@ -17,6 +17,8 @@ type PasswordManager interface {
 	GetPath() string
 }
 
+// NewPasswordManager returns a pointer to a Vault implementing
+// the PasswordManager interface
 func NewPasswordManager(path string) PasswordManager {
 	return &Vault{
 		Path: path,
@@ -29,6 +31,7 @@ type IO interface {
 	SimpleText(txt string) (string, error)
 }
 
+// NewIO returns a pointer to a cmdIO implemnting the IO interface
 func NewIO() IO {
 	return &cmdIO{}
 }
