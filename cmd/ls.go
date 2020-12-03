@@ -17,9 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -29,18 +27,21 @@ var listCmd = &cobra.Command{
 	Short: "displays all stored accounts",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		isInit, err := internal.CheckVaultInit(vaultPath)
-		if err != nil || !isInit {
+
+		// get vault password
+		password, err := clIO.Password()
+		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		password, err := internal.InputPassword()
+		// get encryted vault
+		encryted, err := PassManager.Read()
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			return
 		}
-
-		vault, err := internal.DecryptVault(vaultPath, password)
+		// decrypt vault
+		vault, err := PassManager.Decrypt(password, encryted)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

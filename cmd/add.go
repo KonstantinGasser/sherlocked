@@ -16,11 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
-	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -33,46 +31,63 @@ var addCmd = &cobra.Command{
 	Long:  `with the add command you can add a new password mapped to a username or account name`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		isInit, err := internal.CheckVaultInit(vaultPath)
-		if err != nil || !isInit {
-			fmt.Println(err.Error())
-			return
-		}
-
-		password, err := internal.InputPassword()
+		password, err := clIO.Password()
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 
-		uname, pass, err := internal.InputCredentials()
+		uname, pass, err := clIO.Credentials()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
-		vault, err := internal.DecryptVault(vaultPath, password)
+		// get encryted vault
+		fileContent, err := PassManager.Read()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		// decrypt vault
+		vault, err := PassManager.Decrypt(password, fileContent)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
+		// check if user exists in vault with same key
 		if _, ok := vault[uname]; ok && !override {
 			fmt.Printf("🤔 User %s already stroed use add --override (this option is inreversable) or del -user\n", uname)
 			return
 		}
+
+		// add new account to vault
 		vault[uname] = pass
 
-		vaultslcie, err := json.Marshal(vault)
+		// write changed vault
+		b, err := PassManager.Serialize(vault)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		if err := internal.EncryptVault(vaultPath, password, vaultslcie); err != nil {
+		encrypted, err := PassManager.Encrypt(password, b)
+		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-
+		// do backup of current vault
+		after, err := PassManager.Backup(func() error {
+			return PassManager.Write(encrypted)
+		})
+		if err != nil { // backup failed to be created, abort writing
+			fmt.Println(err.Error())
+			return
+		}
+		if err := after(); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	},
 }
 

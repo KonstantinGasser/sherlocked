@@ -20,12 +20,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/spf13/cobra"
 )
 
+var PassManager internal.PasswordManager
+var clIO internal.IO
 var homeDir string
 var vaultPath string
-var vaultExists = false
+var isInit bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -52,6 +55,16 @@ func Execute() {
 }
 
 func init() {
-	homeDir, _ = os.UserHomeDir()
-	vaultPath = strings.Join([]string{homeDir, ".sherlocked"}, "/")
+	clIO = internal.NewIO()
+
+	// homeDir, _ = os.UserHomeDir() // for testing
+	vaultPath = strings.Join([]string{".", ".sherlocked"}, "/")
+
+	PassManager = internal.NewPasswordManager(vaultPath)
+	init, err := PassManager.IsInit()
+	if err != nil {
+		fmt.Printf("🧐 something happend while initializing: %s\n", err.Error())
+	}
+	isInit = init
+
 }

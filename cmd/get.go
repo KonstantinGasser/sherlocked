@@ -17,9 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
@@ -32,32 +30,36 @@ var getCmd = &cobra.Command{
 	Short: "get returns the password stored for a given account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		isInit, err := internal.CheckVaultInit(vaultPath)
-		if err != nil || !isInit {
-			fmt.Println(err.Error())
-			return
-		}
-		password, err := internal.InputPassword()
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
 
-		vault, err := internal.DecryptVault(vaultPath, password)
+		// get vault password
+		password, err := clIO.Password()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
-		if key, ok := vault[name]; !ok {
-			fmt.Printf("😐 No user %s in the vault", key)
+		// get encryted vault
+		encryted, err := PassManager.Read()
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
+		// decrypt vault
+		vault, err := PassManager.Decrypt(password, encryted)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		if _, ok := vault[name]; !ok {
+			fmt.Printf("😐 No user %s in the vault", name)
+			return
+		}
+		// copy password to clipboard
 		clipboard.WriteAll(vault[name])
 		if hidePassword {
 			fmt.Print(vault[name])
 		}
-
 		return
 	},
 }

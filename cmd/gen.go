@@ -16,8 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/KonstantinGasser/sherlocked/internal"
 	"github.com/atotto/clipboard"
@@ -48,20 +48,22 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		randPassword := internal.GeneratePassword(length, upperCase, lowerCase, numbers, specials, ignore)
 
-		// if newUser == "nil" {
-		// 	fmt.Printf("🤨 Seems like you forgot to tell me which user that password is for?")
-		// 	return
-		// }
-
 		if newUser != "nil" {
 			// fetch vault password and decrypt vault
-			password, err := internal.InputPassword()
+			password, err := clIO.Password()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+
+			// get encryted vault
+			fileContent, err := PassManager.Read()
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
-
-			vault, err := internal.DecryptVault(vaultPath, password)
+			// decrypt vault
+			vault, err := PassManager.Decrypt(password, fileContent)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
@@ -73,13 +75,26 @@ to quickly create a Cobra application.`,
 			}
 			vault[newUser] = randPassword
 
-			// encrypt and write vault
-			vaultslcie, err := json.Marshal(vault)
+			// write changed vault
+			b, err := PassManager.Serialize(vault)
 			if err != nil {
 				fmt.Println(err.Error())
 				return
 			}
-			if err := internal.EncryptVault(vaultPath, password, vaultslcie); err != nil {
+			encrypted, err := PassManager.Encrypt(password, b)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			// do backup of current vault
+			after, err := PassManager.Backup(func() error {
+				return PassManager.Write(encrypted)
+			})
+			if err != nil { // backup failed to be created, abort writing
+				fmt.Println(err.Error())
+				return
+			}
+			if err := after(); err != nil {
 				fmt.Println(err.Error())
 				return
 			}
