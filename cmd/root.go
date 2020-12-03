@@ -55,16 +55,17 @@ func Execute() {
 }
 
 func init() {
+	homeDir, _ = os.UserHomeDir() // for testing
+	vaultPath = strings.Join([]string{homeDir, ".sherlocked"}, "/")
+
 	clIO = internal.NewIO()
-
-	// homeDir, _ = os.UserHomeDir() // for testing
-	vaultPath = strings.Join([]string{".", ".sherlocked"}, "/")
-
 	PassManager = internal.NewPasswordManager(vaultPath)
-	init, err := PassManager.IsInit()
-	if err != nil {
-		fmt.Printf("🧐 something happend while initializing: %s\n", err.Error())
+
+	if ok, _ := PassManager.IsInit(); !ok {
+		if err := PassManager.Init(clIO); err != nil {
+			fmt.Println(err.Error())
+		}
+		os.Exit(1)
 	}
-	isInit = init
 
 }

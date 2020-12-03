@@ -79,6 +79,7 @@ func (v Vault) Read() ([]byte, error) {
 func (v Vault) Write(data []byte) error {
 	f, err := os.OpenFile(v.Path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		panic(err)
 		return cmd_errors.IOFileError{
 			MSG: `😱 Unable to open file '.sherlocked'. This file should have been created
 				by in the make command. If it is missing execute 'touch $HOME/.sherlocked'.`,
@@ -86,6 +87,7 @@ func (v Vault) Write(data []byte) error {
 	}
 
 	if _, err := f.Write(data); err != nil {
+		panic(err)
 		return cmd_errors.IOFileError{
 			MSG: `😅 could not write the changed vault to file. Don't worry we
 			have a plan B - if the '.sherlocked' is corrupted execute
@@ -158,6 +160,41 @@ func (v Vault) IsInit() (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+// Init initializes the vault file for the first time
+func (v Vault) Init(clIO IO) error {
+	fmt.Printf("Looks like your not yet set-up. Set a vault password to decrypt\nencrpyt your vault")
+	var vault = make(map[string]string)
+
+	password, err := clIO.SetNewPassword(v.EvaluatePassword)
+	if err != nil {
+		return err
+	}
+	// write changed vault
+	b, err := v.Serialize(vault)
+	if err != nil {
+		return err
+	}
+	encrypted, err := v.Encrypt(password, b)
+	if err != nil {
+		return err
+	}
+	if err := v.Write(encrypted); err != nil {
+		return err
+	}
+	// // do backup of current vault
+	// after, err := v.Backup(func() error {
+	// 	return v.Write(encrypted)
+	// })
+	// if err != nil { // backup failed to be created, abort writing
+	// 	return err
+	// }
+	// if err := after(); err != nil {
+	// 	return err
+	// }
+	fmt.Printf("✌🏼 You're all set!")
+	return nil
 }
 
 // GetPath returns the path of the vault file

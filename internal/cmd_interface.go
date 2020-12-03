@@ -3,6 +3,7 @@ package internal
 // PasswordManager is the interface to act with the vault
 type PasswordManager interface {
 	// required pre-condition: is false new vault needs be created
+	Init(clIO IO) error
 	IsInit() (bool, error)
 	// wrapper to read and write to the file
 	Read() ([]byte, error)
@@ -29,6 +30,7 @@ type IO interface {
 	Credentials() (string, string, error)
 	Password() (string, error)
 	SimpleText(txt string) (string, error)
+	SetNewPassword(eval func(pass string) int) (string, error)
 }
 
 // NewIO returns a pointer to a cmdIO implemnting the IO interface

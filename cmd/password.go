@@ -16,10 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -34,55 +32,28 @@ var passwordCmd = &cobra.Command{
 		// check if vault exists
 		// yes: decrypt vault encrypt with new password
 		// no: create new vault encrypt with new password
-		fmt.Println(isInit)
 		var vault map[string]string
-		if isInit { // vault exists
-			oldPassword, err := clIO.Password()
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			// get encryted vault
-			fileContent, err := PassManager.Read()
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
-			// decrypt vault
-			vault, err = PassManager.Decrypt(oldPassword, fileContent)
-			if err != nil {
-				fmt.Println(err.Error())
-				return
-			}
+		oldPassword, err := clIO.Password()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
-		if !isInit { // create new vault
-			vault = make(map[string]string)
-		}
-
-		password1, err := clIO.SimpleText("New Password: ")
+		// get encryted vault
+		fileContent, err := PassManager.Read()
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		passwordStrength := PassManager.EvaluatePassword(password1)
-		if passwordStrength < 50 {
-			fmt.Print("Mhm looks like this is not the best password..😅 - try again [Y/n]: ")
-			reader := bufio.NewReader(os.Stdin)
-			tryAgain, _ := reader.ReadString('\n')
-			if strings.TrimSpace(tryAgain) == "Y" {
-				password1, err = clIO.SimpleText("😏 choose wisely: ")
-			}
-			fmt.Print("\n")
-		}
-
-		fmt.Println("🙃 Just to make sure...confirm your password")
-		password2, err := clIO.SimpleText("Repeat Password: ")
+		// decrypt vault
+		vault, err = PassManager.Decrypt(oldPassword, fileContent)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-		if password1 != password2 {
-			fmt.Println("They don't match let's do it again, shall we? 🤦🏼‍♀️")
+
+		password, err := clIO.SetNewPassword(PassManager.EvaluatePassword)
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
 		// write changed vault
@@ -91,7 +62,7 @@ var passwordCmd = &cobra.Command{
 			fmt.Println(err.Error())
 			return
 		}
-		encrypted, err := PassManager.Encrypt(password1, b)
+		encrypted, err := PassManager.Encrypt(password, b)
 		if err != nil {
 			fmt.Println(err.Error())
 			return

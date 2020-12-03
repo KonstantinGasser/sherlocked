@@ -67,6 +67,34 @@ func (cmd *cmdIO) SimpleText(txt string) (string, error) {
 	return strings.TrimSpace(password), nil
 }
 
+func (cmd *cmdIO) SetNewPassword(eval func(pass string) int) (string, error) {
+
+	password1, err := cmd.SimpleText("New Password: ")
+	if err != nil {
+		return "", err
+	}
+	passwordStrength := eval(password1)
+	if passwordStrength < 50 {
+		fmt.Print("Mhm looks like this is not the best password..😅 - try again [Y/n]: ")
+		reader := bufio.NewReader(os.Stdin)
+		tryAgain, _ := reader.ReadString('\n')
+		if strings.TrimSpace(tryAgain) == "Y" {
+			password1, err = cmd.SimpleText("😏 choose wisely: ")
+		}
+		fmt.Print("\n")
+	}
+
+	fmt.Println("🙃 Just to make sure...confirm your password")
+	password2, err := cmd.SimpleText("Repeat Password: ")
+	if err != nil {
+		return "", err
+	}
+	if password1 != password2 {
+		return "", fmt.Errorf("They don't match let's do it again, shall we? 🤦🏼‍♀️")
+	}
+	return password1, nil
+}
+
 func openFile(path string) (*os.File, error) {
 
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
