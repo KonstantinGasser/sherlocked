@@ -43,17 +43,20 @@ func GeneratePassword(length, noUpperCase, noLowerCase, noNumber, noSpecials int
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(uppers, "")
 			index := rand.Intn(len(subSet))
 			password.WriteByte(subSet[index])
+			u++
 		}
 
 		if n < noNumber {
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(numbers, "")
 			index := rand.Intn(len(subSet))
 			password.WriteByte(subSet[index])
+			n++
 		}
 		if s < noSpecials {
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(specials, "")
 			index := rand.Intn(len(subSet))
 			password.WriteByte(subSet[index])
+			s++
 		}
 
 	}
