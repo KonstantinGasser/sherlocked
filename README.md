@@ -17,12 +17,12 @@ Thus this command line password manager.
 * `lock del -u <account-name>` // delete account and password from vault
 * `lock password` // change the password of the vault
 *  `lock gen` // generate a random password (default length:8).
- * `--length <#>` override default length of password. Shorthand: `-l`
-  * `--uppers <#>` set number of upper case letters. Shorthand: `-u`
-  * `--numbers <#>` set number of numbers (0-9). Shorthand: `-n`
-  * `--specials <#>` set number of special chars `+_-?.@#$%!`. Shorthand: `-s`
-  * `--Create <account-name>` if set generated password will be mapped to the given user. Shorthand: `-C`
-  * `--ignore char#1,char#2,char#n` if set chars will not be used in password !comma separated list!. Shorthand: `-i`
+   * `--length <#>` override default length of password. Shorthand: `-l`
+   * `--uppers <#>` set number of upper case letters. Shorthand: `-u`
+   * `--numbers <#>` set number of numbers (0-9). Shorthand: `-n`
+   * `--specials <#>` set number of special chars `+_-?.@#$%!`. Shorthand: `-s`
+   * `--Create <account-name>` if set generated password will be mapped to the given user. Shorthand: `-C`
+   * `--ignore char#1,char#2,char#n` if set chars will not be used in password !comma separated list!. Shorthand: `-i`
 
 
 ## things to know
