@@ -32,27 +32,32 @@ func GeneratePassword(length, noUpperCase, noLowerCase, noNumber, noSpecials int
 
 	// get random chars from each lower, upper, number and
 	// special string vars
-	for i := 0; i < noUpperCase; i++ {
-		subSet := regexp.MustCompile(pattern).ReplaceAllString(uppers, "")
-		index := rand.Intn(len(subSet))
-		password.WriteByte(subSet[index])
-	}
-	for i := 0; i < noNumber; i++ {
-		subSet := regexp.MustCompile(pattern).ReplaceAllString(numbers, "")
-		index := rand.Intn(len(subSet))
-		password.WriteByte(subSet[index])
-	}
-	for i := 0; i < noSpecials; i++ {
-		subSet := regexp.MustCompile(pattern).ReplaceAllString(specials, "")
-		index := rand.Intn(len(subSet))
-		password.WriteByte(subSet[index])
-	}
-
+	var u, n, s int
 	for i := 0; i < noLowerCase; i++ {
+
 		subSet := regexp.MustCompile(pattern).ReplaceAllString(lowers, "")
 		index := rand.Intn(len(subSet))
 		password.WriteByte(subSet[index])
+
+		if u < noUpperCase {
+			subSet := regexp.MustCompile(pattern).ReplaceAllString(uppers, "")
+			index := rand.Intn(len(subSet))
+			password.WriteByte(subSet[index])
+		}
+
+		if n < noNumber {
+			subSet := regexp.MustCompile(pattern).ReplaceAllString(numbers, "")
+			index := rand.Intn(len(subSet))
+			password.WriteByte(subSet[index])
+		}
+		if s < noSpecials {
+			subSet := regexp.MustCompile(pattern).ReplaceAllString(specials, "")
+			index := rand.Intn(len(subSet))
+			password.WriteByte(subSet[index])
+		}
+
 	}
+
 	return password.String()
 
 }
