@@ -77,7 +77,7 @@ func (v Vault) Read() ([]byte, error) {
 
 // Write wrties the byte slice to in the vault file
 func (v Vault) Write(data []byte) error {
-	fmt.Println(v.Path)
+
 	f, err := os.OpenFile(v.Path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return cmd_errors.IOFileError{
@@ -182,16 +182,6 @@ func (v Vault) Init(clIO IO) error {
 	if err := v.Write(encrypted); err != nil {
 		return err
 	}
-	// // do backup of current vault
-	// after, err := v.Backup(func() error {
-	// 	return v.Write(encrypted)
-	// })
-	// if err != nil { // backup failed to be created, abort writing
-	// 	return err
-	// }
-	// if err := after(); err != nil {
-	// 	return err
-	// }
 	fmt.Printf("✌🏼 You're all set!\n")
 	return nil
 }
@@ -224,7 +214,7 @@ func (v Vault) deserialize(vault []byte) (map[string]string, error) {
 
 	var decrypted map[string]string
 	if err := json.Unmarshal(vault, &decrypted); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("🧐 Ups looks like your password does not work for this vault!")
 	}
 	return decrypted, nil
 }

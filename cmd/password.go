@@ -29,9 +29,10 @@ var passwordCmd = &cobra.Command{
 	Long:  `Choose a strong password! And dont forget it - If you choose to go that way..I can't follow you nor can I help you`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// check if vault exists
-		// yes: decrypt vault encrypt with new password
-		// no: create new vault encrypt with new password
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
+
 		var vault map[string]string
 		oldPassword, err := clIO.Password()
 		if err != nil {
@@ -79,69 +80,9 @@ var passwordCmd = &cobra.Command{
 			fmt.Println(err.Error())
 			return
 		}
-
-		// var vault map[string]string
-		// var password1 string
-		// var password2 string
-		//
-		// if isInit {
-		// 	password, err := internal.InputText("Current Password: ")
-		// 	if err != nil {
-		// 		fmt.Println(err.Error())
-		// 		return
-		// 	}
-		// 	vault, err = internal.DecryptVault(vaultPath, password)
-		// 	if err != nil {
-		// 		fmt.Println(err.Error())
-		// 		return
-		// 	}
-		// }
-		//
-		// if !isInit {
-		// 	vault = make(map[string]string)
-		// }
-		//
-		// password1, err := internal.InputText("Password: ")
-		// if err != nil {
-		// 	fmt.Println(err.Error())
-		// 	return
-		// }
-		// passwordStrength := internal.EvaluatePassword(password1)
-		// if passwordStrength < 50 {
-		// 	fmt.Print("Mhm looks like this is not the best password..😅 - try again [Y/n]: ")
-		// 	reader := bufio.NewReader(os.Stdin)
-		// 	tryAgain, _ := reader.ReadString('\n')
-		// 	if strings.TrimSpace(tryAgain) == "Y" {
-		// 		password1, err = internal.InputText("😏 choose wisely: ")
-		// 	}
-		// 	fmt.Print("\n")
-		// }
-		//
-		// fmt.Println("🙃 Just to make sure...confirm your password")
-		// password2, err = internal.InputText("Password: ")
-		// if err != nil {
-		// 	fmt.Println(err.Error())
-		// 	return
-		// }
-		// if password1 != password2 {
-		// 	fmt.Println("They don't match let's do it again, shall we? 🤦🏼‍♀️")
-		// 	return
-		// }
-		//
-		// vaultslcie, err := json.Marshal(vault)
-		// if err != nil {
-		// 	fmt.Println(err.Error())
-		// 	return
-		// }
-		// if err := internal.EncryptVault(vaultPath, password1, vaultslcie); err != nil {
-		// 	fmt.Println(err.Error())
-		// 	return
-		// }
-		// fmt.Println("Vault is now encrypted with the new password ✅")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(passwordCmd)
-
 }

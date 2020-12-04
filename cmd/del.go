@@ -24,15 +24,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var username string
-
 // delCmd represents the del command
 var delCmd = &cobra.Command{
 	Use:   "del",
 	Short: "delete a key value pair from the vault",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
+		if len(args) < 1 {
+			fmt.Println("😐 No user specified")
+			return
+		}
 
+		username := args[0]
 		password, err := clIO.Password()
 		if err != nil {
 			fmt.Println(err.Error())
@@ -103,6 +109,4 @@ var delCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(delCmd)
-	delCmd.Flags().StringVarP(&username, "user", "u", "", "account name which you want to delete")
-
 }
