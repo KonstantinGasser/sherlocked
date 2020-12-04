@@ -46,6 +46,9 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
 
 		randPassword := internal.GeneratePassword(length, upperCase, lowerCase, numbers, specials, ignore)
 
@@ -109,12 +112,10 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(genCmd)
-
 	genCmd.Flags().StringVarP(&newUser, "create", "C", "nil", "when given password and user will be added to the vault")
 	genCmd.Flags().IntVarP(&length, "length", "l", 8, "determin the length of the generated password (default=8)")
 	genCmd.Flags().IntVarP(&upperCase, "uppers", "u", 2, "determin the number of upper case chars")
 	genCmd.Flags().IntVarP(&numbers, "numbers", "n", 2, "determin the number of numbers")
 	genCmd.Flags().IntVarP(&specials, "specials", "s", 2, "determin the number of special chars (+_-?.@#$%!)")
 	genCmd.Flags().StringVar(&ignore, "ignore", "i", "ignore characters (char_1,char_2,char_n...)")
-
 }

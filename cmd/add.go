@@ -30,6 +30,9 @@ var addCmd = &cobra.Command{
 	Short: "add a new username and password to the key vault",
 	Long:  `with the add command you can add a new password mapped to a username or account name`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
 
 		password, err := clIO.Password()
 		if err != nil {

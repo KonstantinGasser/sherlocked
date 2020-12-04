@@ -26,9 +26,7 @@ import (
 
 var PassManager internal.PasswordManager
 var clIO internal.IO
-var homeDir string
-var vaultPath string
-var isInit bool
+var version = "v1.0.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -54,18 +52,18 @@ func Execute() {
 	}
 }
 
-func init() {
-	homeDir, _ = os.UserHomeDir() // for testing
-	vaultPath = strings.Join([]string{homeDir, ".sherlocked"}, "/")
+func initVault() {
+	homeDir, _ := os.UserHomeDir()
+	vaultPath := strings.Join([]string{homeDir, ".sherlocked"}, "/")
 
 	clIO = internal.NewIO()
 	PassManager = internal.NewPasswordManager(vaultPath)
-
 	if ok, _ := PassManager.IsInit(); !ok {
 		if err := PassManager.Init(clIO); err != nil {
 			fmt.Println(err.Error())
 		}
 		os.Exit(1)
 	}
-
 }
+
+func init() {}

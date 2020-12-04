@@ -27,6 +27,9 @@ var listCmd = &cobra.Command{
 	Short: "displays all stored accounts",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
 
 		// get vault password
 		password, err := clIO.Password()

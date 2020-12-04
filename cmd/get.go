@@ -29,6 +29,9 @@ var getCmd = &cobra.Command{
 	Short: "get returns the password stored for a given account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Verify that a password is set for the vault
+		// and a default vault exists
+		initVault()
 
 		if len(args) < 1 {
 			fmt.Println("😐 No user specified")
@@ -71,6 +74,5 @@ var getCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(getCmd)
-
 	getCmd.Flags().BoolVarP(&hidePassword, "verbose", "v", false, "print password to the command line")
 }
