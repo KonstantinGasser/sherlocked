@@ -11,12 +11,12 @@ Thus this command line password manager.
 2. run `lock password` you will get asked to set a vault password - don't forget it
 #### Available commands:
 * `lock add` enter you vault password then the account name and its password
-* `lock get -u <account-name>` retrieve a password (by default the password will not be printed but only copied to your clipboard
+* `lock get <account-name>` retrieve a password (by default the password will not be printed but only copied to your clipboard
   * use the flag `-v` to print the password
-* `lock ls` // print all accounts stored in the vault
-* `lock del -u <account-name>` // delete account and password from vault
-* `lock password` // change the password of the vault
-*  `lock gen` // generate a random password (default length:8).
+* `lock ls` print all accounts stored in the vault
+* `lock del <account-name>` delete account and password from vault
+* `lock password` change the password of the vault
+*  `lock gen` generate a random password (default length:8).
    * `--length <#>` override default length of password. Shorthand: `-l`
    * `--uppers <#>` set number of upper case letters. Shorthand: `-u`
    * `--numbers <#>` set number of numbers (0-9). Shorthand: `-n`
