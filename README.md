@@ -7,8 +7,7 @@ Thus this command line password manager.
 
 
 ## usage
-1. run `touch $HOME/.sherlocked` here your accounts and passwords will be stored to
-2. run `lock password` you will get asked to set a vault password - don't forget it
+1. run `lock password` you will get asked to set a vault password - don't forget it
 #### Available commands:
 * `lock add` enter you vault password then the account name and its password
 * `lock get <account-name>` retrieve a password (by default the password will not be printed but only copied to your clipboard
