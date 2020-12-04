@@ -23,7 +23,6 @@ import (
 )
 
 // getCmd represents the get command
-var name string
 var hidePassword bool
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -31,6 +30,12 @@ var getCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		if len(args) < 1 {
+			fmt.Println("😐 No user specified")
+			return
+		}
+
+		name := args[0]
 		// get vault password
 		password, err := clIO.Password()
 		if err != nil {
@@ -67,6 +72,5 @@ var getCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	getCmd.Flags().StringVarP(&name, "user", "u", "", "Specifies the account under which the password is stored")
 	getCmd.Flags().BoolVarP(&hidePassword, "verbose", "v", false, "print password to the command line")
 }
