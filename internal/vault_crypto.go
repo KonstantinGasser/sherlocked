@@ -214,7 +214,7 @@ func (v Vault) deserialize(vault []byte) (map[string]string, error) {
 
 	var decrypted map[string]string
 	if err := json.Unmarshal(vault, &decrypted); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("🧐 Ups looks like your password does not work for this vault!")
 	}
 	return decrypted, nil
 }
