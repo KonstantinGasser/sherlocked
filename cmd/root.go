@@ -55,6 +55,15 @@ func Execute() {
 }
 
 func init() {
+	// 	fmt.Print(`
+	//  _____ 	 _    _       __
+	// |		__|	| |__| |   __|__|__
+	// |__		|	| |--| | |_|_|_|_|_|
+	// |_____|	|_|  |_| |_|_|_|_|_|
+	// 								 |_|_|_|_|_|
+	// 								 |_|_|_|_|_|
+	//
+	// 		`)
 	homeDir, _ = os.UserHomeDir() // for testing
 	vaultPath = strings.Join([]string{homeDir, ".sherlocked"}, "/")
 
