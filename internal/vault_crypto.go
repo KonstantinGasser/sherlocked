@@ -97,26 +97,19 @@ func (v Vault) Write(data []byte) error {
 
 }
 
-// Backup takes a backup of the current file
+// TmpBackup takes a backup of the current file
 // then executes the passed function. If function returns nil
 // the backup file gets deleted
-func (v Vault) Backup(after func() error) (func() error, error) {
+func (v Vault) TmpBackup() (func() error, error) {
 	// take a backup of the current vault file
 	backup, err := renameFile(v.Path)
 	if err != nil {
 		return nil, err
 	}
 
+	// return clean-up function to remove tmp backup
 	return func() error {
-		// execute function which should be done after the backup is taken
-		if err := after(); err != nil {
-			return err
-		}
-		// delete backup file if writing of new was successful
-		if err := removeFile(backup); err != nil {
-			return err
-		}
-		return nil
+		return removeFile(backup)
 	}, nil
 }
 

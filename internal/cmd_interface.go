@@ -11,7 +11,7 @@ type PasswordManager interface {
 	Serialize(data map[string]string) ([]byte, error)
 	// wrapper function to perform a backup of the vault
 	// befor proceeding with a function (like writing a new vault)
-	Backup(after func() error) (func() error, error)
+	TmpBackup() (func() error, error)
 	EvaluatePassword(password string) int
 	Encrypt(key string, vault []byte) ([]byte, error)
 	Decrypt(key string, vault []byte) (map[string]string, error)

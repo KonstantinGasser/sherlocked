@@ -91,14 +91,18 @@ to quickly create a Cobra application.`,
 				return
 			}
 			// do backup of current vault
-			after, err := PassManager.Backup(func() error {
-				return PassManager.Write(encrypted)
-			})
+			cleanup, err := PassManager.TmpBackup()
 			if err != nil { // backup failed to be created, abort writing
 				fmt.Println(err.Error())
 				return
 			}
-			if err := after(); err != nil {
+			// write new vault to file afer backup is done
+			if err := PassManager.Write(encrypted); err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+			// delete tmp backup after nedw vault is written to FS
+			if err := cleanup(); err != nil {
 				fmt.Println(err.Error())
 				return
 			}
