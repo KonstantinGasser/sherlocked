@@ -32,44 +32,47 @@ var getCmd = &cobra.Command{
 		// Verify that a password is set for the vault
 		// and a default vault exists
 		initVault()
-
-		if len(args) < 1 {
-			fmt.Println("😐 No user specified")
-			return
-		}
-
-		name := args[0]
-		// get vault password
-		password, err := clIO.Password()
-		if err != nil {
+		if err := runGet(args); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-
-		// get encryted vault
-		encryted, err := PassManager.Read()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		// decrypt vault
-		vault, err := PassManager.Decrypt(password, encryted)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		if _, ok := vault[name]; !ok {
-			fmt.Printf("😐 No user %s in the vault", name)
-			return
-		}
-		// copy password to clipboard
-		clipboard.WriteAll(vault[name])
-		if hidePassword {
-			fmt.Print(vault[name])
-		}
-		return
 	},
+}
+
+// run func holds the logic for the password command
+// is a separated function to test the code proper
+func runGet(args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("😐 No user specified")
+	}
+
+	name := args[0]
+	// get vault password
+	password, err := clIO.Password()
+	if err != nil {
+		return err
+	}
+
+	// get encryted vault
+	encryted, err := PassManager.Read()
+	if err != nil {
+		return err
+	}
+	// decrypt vault
+	vault, err := PassManager.Decrypt(password, encryted)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := vault[name]; !ok {
+		return fmt.Errorf("😐 No user %s in the vault", name)
+	}
+	// copy password to clipboard
+	clipboard.WriteAll(vault[name])
+	if hidePassword {
+		fmt.Print(vault[name])
+	}
+	return nil
 }
 
 func init() {

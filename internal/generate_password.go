@@ -18,12 +18,12 @@ var (
 
 // if length is less then noUpperCase + noLowerCase + noNumber + noSpecials
 // length will be ignored
-func GeneratePassword(length, noUpperCase, noLowerCase, noNumber, noSpecials int, ignore string) string {
+func GeneratePassword(length, noUpperCase, noLowerCase, noNumber, noSpecials int, ignore string) (password string) {
 	// build regex pattern of chars to exclude from password
 	pattern := fmt.Sprintf("[%s]", ignore)
 	rand.Seed(time.Now().Unix())
 
-	var password strings.Builder
+	var passwordBuilder strings.Builder
 
 	fillWith := length - (noUpperCase + noLowerCase + noNumber + noSpecials)
 	if fillWith >= 0 { // char specification is less then length
@@ -37,30 +37,30 @@ func GeneratePassword(length, noUpperCase, noLowerCase, noNumber, noSpecials int
 
 		subSet := regexp.MustCompile(pattern).ReplaceAllString(lowers, "")
 		index := rand.Intn(len(subSet))
-		password.WriteByte(subSet[index])
+		passwordBuilder.WriteByte(subSet[index])
 
 		if u < noUpperCase {
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(uppers, "")
 			index := rand.Intn(len(subSet))
-			password.WriteByte(subSet[index])
+			passwordBuilder.WriteByte(subSet[index])
 			u++
 		}
 
 		if n < noNumber {
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(numbers, "")
 			index := rand.Intn(len(subSet))
-			password.WriteByte(subSet[index])
+			passwordBuilder.WriteByte(subSet[index])
 			n++
 		}
 		if s < noSpecials {
 			subSet := regexp.MustCompile(pattern).ReplaceAllString(specials, "")
 			index := rand.Intn(len(subSet))
-			password.WriteByte(subSet[index])
+			passwordBuilder.WriteByte(subSet[index])
 			s++
 		}
 
 	}
-
-	return password.String()
+	password = passwordBuilder.String()
+	return password
 
 }

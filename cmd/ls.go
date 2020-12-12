@@ -30,31 +30,37 @@ var listCmd = &cobra.Command{
 		// Verify that a password is set for the vault
 		// and a default vault exists
 		initVault()
-
-		// get vault password
-		password, err := clIO.Password()
-		if err != nil {
+		if err := runLS(); err != nil {
 			fmt.Println(err.Error())
 			return
-		}
-		// get encryted vault
-		encryted, err := PassManager.Read()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		// decrypt vault
-		vault, err := PassManager.Decrypt(password, encryted)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		fmt.Println("Stored keys:")
-		for key := range vault {
-			fmt.Printf("	🗝 %s\n", key)
 		}
 	},
+}
+
+// run func holds the logic for the password command
+// is a separated function to test the code proper
+func runLS() error {
+	// get vault password
+	password, err := clIO.Password()
+	if err != nil {
+		return err
+	}
+	// get encryted vault
+	encryted, err := PassManager.Read()
+	if err != nil {
+		return err
+	}
+	// decrypt vault
+	vault, err := PassManager.Decrypt(password, encryted)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Stored keys:")
+	for key := range vault {
+		fmt.Printf("	🗝 %s\n", key)
+	}
+	return nil
 }
 
 func init() {

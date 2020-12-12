@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -34,69 +33,68 @@ var addCmd = &cobra.Command{
 		// and a default vault exists
 		initVault()
 
-		password, err := clIO.Password()
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-
-		uname, pass, err := clIO.Credentials()
-		if err != nil {
+		if err := runAdd(args); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-
-		// get encryted vault
-		fileContent, err := PassManager.Read()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		// decrypt vault
-		vault, err := PassManager.Decrypt(password, fileContent)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		// check if user exists in vault with same key
-		if _, ok := vault[uname]; ok && !override {
-			fmt.Printf("🤔 User %s already stroed use add --override (this option is inreversable) or del -user\n", uname)
-			return
-		}
-
-		// add new account to vault
-		vault[uname] = pass
-
-		// write changed vault
-		b, err := PassManager.Serialize(vault)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		encrypted, err := PassManager.Encrypt(password, b)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		// do backup of current vault
-		cleanup, err := PassManager.TmpBackup()
-		if err != nil { // backup failed to be created, abort writing
-			fmt.Println(err.Error())
-			return
-		}
-		// write new vault to file afer backup is done
-		if err := PassManager.Write(encrypted); err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		// delete tmp backup after nedw vault is written to FS
-		if err := cleanup(); err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
 	},
+}
+
+// run func holds the logic for the password command
+// is a separated function to test the code proper
+func runAdd(args []string) error {
+	password, err := clIO.Password()
+	if err != nil {
+		return err
+	}
+
+	uname, pass, err := clIO.Credentials()
+	if err != nil {
+		return err
+	}
+
+	// get encryted vault
+	fileContent, err := PassManager.Read()
+	if err != nil {
+		return err
+	}
+	// decrypt vault
+	vault, err := PassManager.Decrypt(password, fileContent)
+	if err != nil {
+		return err
+	}
+
+	// check if user exists in vault with same key
+	if _, ok := vault[uname]; ok && !override {
+		return fmt.Errorf("🤔 User %s already stroed use add --override (this option is inreversable) or del -user\n", uname)
+	}
+
+	// add new account to vault
+	vault[uname] = pass
+
+	// write changed vault
+	b, err := PassManager.Serialize(vault)
+	if err != nil {
+		return err
+	}
+	encrypted, err := PassManager.Encrypt(password, b)
+	if err != nil {
+		return err
+	}
+	// do backup of current vault
+	cleanup, err := PassManager.TmpBackup()
+	if err != nil { // backup failed to be created, abort writing
+		return err
+	}
+	// write new vault to file afer backup is done
+	if err := PassManager.Write(encrypted); err != nil {
+		return err
+	}
+	// delete tmp backup after nedw vault is written to FS
+	if err := cleanup(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func init() {

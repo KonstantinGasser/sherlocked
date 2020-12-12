@@ -21,7 +21,7 @@ type Vault struct {
 }
 
 // Decrypt takes a key and a byte slice and decrypts the AES encrypted byte slice
-func (v *Vault) Decrypt(key string, file []byte) (map[string]string, error) {
+func (v *Vault) Decrypt(key string, file []byte) (decrypted map[string]string, err error) {
 
 	aeskey, _ := v.hash(key)
 
@@ -42,11 +42,12 @@ func (v *Vault) Decrypt(key string, file []byte) (map[string]string, error) {
 
 	stream.XORKeyStream(ciphervault, ciphervault)
 
-	return v.deserialize(ciphervault)
+	decrypted, err = v.deserialize(ciphervault)
+	return decrypted, err
 }
 
 // Encrypt takes a key and a byte slice and performs a AES encryption on the slcie
-func (v *Vault) Encrypt(key string, vault []byte) ([]byte, error) {
+func (v *Vault) Encrypt(key string, vault []byte) (encrypted []byte, err error) {
 
 	aeskey, _ := v.hash(key)
 
@@ -54,9 +55,9 @@ func (v *Vault) Encrypt(key string, vault []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ciphertext := make([]byte, aes.BlockSize+len(vault))
+	encrypted = make([]byte, aes.BlockSize+len(vault))
 
-	iv := ciphertext[:aes.BlockSize]
+	iv := encrypted[:aes.BlockSize]
 
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		panic(err)
@@ -64,15 +65,16 @@ func (v *Vault) Encrypt(key string, vault []byte) ([]byte, error) {
 
 	stream := cipher.NewCFBEncrypter(block, iv)
 
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], vault)
+	stream.XORKeyStream(encrypted[aes.BlockSize:], vault)
 
-	return ciphertext, err
+	return encrypted, err
 
 }
 
 // Read reads the content from the vault file
-func (v Vault) Read() ([]byte, error) {
-	return ioutil.ReadFile(v.Path)
+func (v Vault) Read() (contnet []byte, err error) {
+	content, err := ioutil.ReadFile(v.Path)
+	return content, err
 }
 
 // Write wrties the byte slice to in the vault file
@@ -100,7 +102,7 @@ func (v Vault) Write(data []byte) error {
 // TmpBackup takes a backup of the current file
 // then executes the passed function. If function returns nil
 // the backup file gets deleted
-func (v Vault) TmpBackup() (func() error, error) {
+func (v Vault) TmpBackup() (cleanup func() error, err error) {
 	// take a backup of the current vault file
 	backup, err := renameFile(v.Path)
 	if err != nil {
@@ -108,14 +110,14 @@ func (v Vault) TmpBackup() (func() error, error) {
 	}
 
 	// return clean-up function to remove tmp backup
-	return func() error {
+	cleanup = func() error {
 		return removeFile(backup)
-	}, nil
+	}
+	return cleanup, err
 }
 
 // EvaluatePassword evaluates the strength of a password (range between 0-100)
-func (v Vault) EvaluatePassword(password string) int {
-	var strength = 0
+func (v Vault) EvaluatePassword(password string) (strength int) {
 
 	regN := regexp.MustCompile(`[0-9]`)
 	numbers := regN.FindAllString(password, -1)
@@ -193,21 +195,19 @@ func (v Vault) hash(key string) ([]byte, error) {
 
 // Serialize marshals the vault to a byte slice in order for it be written to a
 // file
-func (v Vault) Serialize(data map[string]string) ([]byte, error) {
-	b, err := json.Marshal(data)
+func (v Vault) Serialize(data map[string]string) (marshaled []byte, err error) {
+	marshaled, err = json.Marshal(data)
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil, err
 	}
-	return b, nil
+	return marshaled, nil
 }
 
 // deserialize takes the vault byte slice and unmarshales it to a map[string]string
-func (v Vault) deserialize(vault []byte) (map[string]string, error) {
+func (v Vault) deserialize(vault []byte) (unmarshaled map[string]string, err error) {
 
-	var decrypted map[string]string
-	if err := json.Unmarshal(vault, &decrypted); err != nil {
+	if err = json.Unmarshal(vault, &unmarshaled); err != nil {
 		return nil, fmt.Errorf("🧐 Ups looks like your password does not work for this vault!")
 	}
-	return decrypted, nil
+	return unmarshaled, nil
 }

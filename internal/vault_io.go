@@ -32,7 +32,7 @@ func (cmd *cmdIO) Password() (string, error) {
 }
 
 // Credentials handels user/account name and password input from the user
-func (cmd *cmdIO) Credentials() (string, string, error) {
+func (cmd *cmdIO) Credentials() (uname string, pass string, err error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("👽: ")
@@ -49,12 +49,15 @@ func (cmd *cmdIO) Credentials() (string, string, error) {
 
 	password := string(bytePassword)
 
-	return strings.TrimSpace(username), strings.TrimSpace(password), nil
+	uname = strings.TrimSpace(username)
+	pass = strings.TrimSpace(password)
+	return uname, pass, nil
 }
 
 // SimpleText is used to collect the new password set by a user
 func (cmd *cmdIO) SimpleText(txt string) (string, error) {
 
+	// text to print in-line with password input
 	fmt.Print(txt)
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
@@ -67,37 +70,37 @@ func (cmd *cmdIO) SimpleText(txt string) (string, error) {
 	return strings.TrimSpace(password), nil
 }
 
-func (cmd *cmdIO) SetNewPassword(eval func(pass string) int) (string, error) {
+func (cmd *cmdIO) SetNewPassword(eval func(pass string) int) (newpassword string, err error) {
 
-	password1, err := cmd.SimpleText("New Password: ")
+	newpassword, err = cmd.SimpleText("New Password: ")
 	if err != nil {
 		return "", err
 	}
-	passwordStrength := eval(password1)
+	passwordStrength := eval(newpassword)
 	if passwordStrength < 50 {
 		fmt.Print("Mhm looks like this is not the best password..😅 - try again [Y/n]: ")
 		reader := bufio.NewReader(os.Stdin)
 		tryAgain, _ := reader.ReadString('\n')
 		if strings.TrimSpace(tryAgain) == "Y" {
-			password1, err = cmd.SimpleText("😏 choose wisely: ")
+			newpassword, err = cmd.SimpleText("😏 choose wisely: ")
 		}
 		fmt.Print("\n")
 	}
 
 	fmt.Println("🙃 Just to make sure...confirm your password")
-	password2, err := cmd.SimpleText("Repeat Password: ")
+	repeatpass, err := cmd.SimpleText("Repeat Password: ")
 	if err != nil {
 		return "", err
 	}
-	if password1 != password2 {
+	if newpassword != repeatpass {
 		return "", fmt.Errorf("They don't match let's do it again, shall we? 🤦🏼‍♀️")
 	}
-	return password1, nil
+	return newpassword, nil
 }
 
-func openFile(path string) (*os.File, error) {
+func openFile(path string) (file *os.File, err error) {
 
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
+	file, err = os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, cmd_errors.IOFileError{
 			MSG: `😱 Unable to open file '.sherlocked'. This file should have been created
@@ -105,13 +108,13 @@ func openFile(path string) (*os.File, error) {
 		}
 	}
 
-	return f, nil
+	return file, err
 }
 
-func renameFile(from string) (string, error) {
+func renameFile(from string) (backuppath string, err error) {
 	home, _ := os.UserHomeDir()
 	backupname := strconv.FormatInt(time.Now().UnixNano(), 10)
-	backuppath := strings.Join([]string{home, ".sherlocked-" + backupname}, "/")
+	backuppath = strings.Join([]string{home, ".sherlocked-" + backupname}, "/")
 
 	return backuppath, os.Rename(from, backuppath)
 }
@@ -126,15 +129,15 @@ func removeFile(path string) error {
 	return nil
 }
 
-func readFile(path string) ([]byte, error) {
-	content, err := ioutil.ReadFile(path)
+func readFile(path string) (content []byte, err error) {
+	content, err = ioutil.ReadFile(path)
 	if err != nil {
 		return nil, cmd_errors.IOFileError{
 			MSG: `🧐 Could not read from the vault file. Verify that '.sherlocked'
 			exists under $HOME.`,
 		}
 	}
-	return content, nil
+	return content, err
 }
 
 func writeFile(path string, vault []byte) error {
