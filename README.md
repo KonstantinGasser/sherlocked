@@ -1,3 +1,5 @@
+Repo has moved to ![sherlock](https://github.com/KonstantinGasser/sherlock)
+
 # simple password manager
 
 ## sherlocked
